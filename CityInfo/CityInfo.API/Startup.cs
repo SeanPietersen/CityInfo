@@ -33,9 +33,6 @@ namespace CityInfo.API
                 .WriteTo.File("logs/cityinfo.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
-
-
-
             services.AddControllers(options =>
            {
                options.ReturnHttpNotAcceptable = true;
@@ -61,12 +58,8 @@ namespace CityInfo.API
 
             services.AddTransient<ICityContract, CityContract>();
 
-            var connectionstring = Configuration["ConnectionString:CityInfoDBConnectionString"];
-            //services.AddDbContext<CityInfoContext>(dbContextOptions => dbContextOptions.UseSqlite(
-            //    Configuration["ConnectionString:CityInfoDBConnectionString"]));
-
             services.AddDbContext<CityInfoContext>(dbContextOptions => dbContextOptions.UseSqlite(
-                "Data Source=C:\\Users\\CodeTenor\\Desktop\\C#\\APIFundementals\\CityInfo\\CityInfo.API\\CityInfo.db;Version=3"));
+                Configuration["ConnectionStrings:CityInfoDBConnectionString"]));
 
             services.AddScoped<ICityInfoRepository, CityInfoRepository>();
         }

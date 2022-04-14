@@ -8,6 +8,7 @@ namespace CityInfo.Infrastructure.Services
     {
         Task<IEnumerable<City>> GetCitiesAsync();
         Task<City?> GetCityByCityIdAsync(int cityId, bool includePointsOfInterest);
+        Task<bool> CityForCityIdExists(int cityId);
         Task<IEnumerable<PointOfInterest>> GetAllPointsOfInterestForCityAsync(int cityId);
         Task<PointOfInterest?> GetPointOfInterestForCityByPointOfInterestIdAsync(int cityId, int pointOfInterestId);
     }

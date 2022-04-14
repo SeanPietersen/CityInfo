@@ -1,14 +1,12 @@
 ﻿using CityInfo.Application.Dto;
 using CityInfo.Application.Mapper;
 using CityInfo.Domain;
-using CityInfo.Infrastructure;
 using CityInfo.Infrastructure.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace CityInfo.Application.Contract
 {
@@ -19,7 +17,7 @@ namespace CityInfo.Application.Contract
         private readonly ICityInfoRepository _cityInfoRepository;
         private readonly PointOfInterestMapper _mapper = new PointOfInterestMapper();
 
-        public PointOfInterestContract(ILogger<PointOfInterestContract> logger, 
+        public PointOfInterestContract(ILogger<PointOfInterestContract> logger,
                                        IMailService mailService,
                                        ICityInfoRepository cityInfoRepository)
         {
@@ -28,42 +26,39 @@ namespace CityInfo.Application.Contract
             _cityInfoRepository = cityInfoRepository;
         }
 
-        public IEnumerable<PointOfInterestDto> GetPointsOfInterestByCityId(int cityId)
+        public IEnumerable<PointOfInterestDto> GetAllPointsOfInterestByCityId(int cityId)
         {
-            try
+            if(!_cityInfoRepository.CityForCityIdExists(cityId).Result)
             {
-                var pointOfInterests = _cityInfoRepository.GetAllPointsOfInterestForCityAsync(cityId).Result;
-
-                if (pointOfInterests == null)
-                {
-                    return null;
-                }
-
-                PointOfInterestMapper pointOfInterestMapper = new PointOfInterestMapper();
-
-                var pointOfInterestDtos = new List<PointOfInterestDto>();
-
-                foreach (var pointOfInterest in pointOfInterests)
-                {
-                    var pointOfInterestDto = pointOfInterestMapper.Map(pointOfInterest);
-                    pointOfInterestDtos.Add(pointOfInterestDto);
-                }
-
-                return pointOfInterestDtos;
+                _logger.LogCritical($"City with id {cityId} wasn't found when accessing points of interest.");
+                return null;
             }
-            catch (Exception ex)
+
+            var pointOfInterests = _cityInfoRepository.GetAllPointsOfInterestForCityAsync(cityId).Result;
+
+            if (pointOfInterests == null)
             {
-                _logger.LogCritical($"Exception while getting points of interest for city with id {cityId}.", ex);
-                throw ex;
+                return null;
             }
+
+            PointOfInterestMapper pointOfInterestMapper = new PointOfInterestMapper();
+
+            var pointOfInterestDtos = new List<PointOfInterestDto>();
+
+            foreach (var pointOfInterest in pointOfInterests)
+            {
+                var pointOfInterestDto = pointOfInterestMapper.Map(pointOfInterest);
+                pointOfInterestDtos.Add(pointOfInterestDto);
+            }
+
+            return pointOfInterestDtos;
         }
 
         public PointOfInterestDto GetPointOfInterestById(int cityId, int pointOfInterestId)
         {
-            var city = _cityInfoRepository.GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).Result; 
-
-            if (city == null)
+            if (!_cityInfoRepository.CityForCityIdExists(cityId).Result)
             {
+                _logger.LogCritical($"City with id {cityId} wasn't found when accessing points of interest.");
                 return null;
             }
 
@@ -91,7 +86,7 @@ namespace CityInfo.Application.Contract
             }
 
             var results = new List<PointOfInterest>();
-            
+
             var pointOfInterests = _cityInfoRepository.GetAllPointsOfInterestForCityAsync(cityId).Result;
 
             foreach (var pointInPointOfInterest in pointOfInterests)

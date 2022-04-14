@@ -42,14 +42,22 @@ namespace CityInfo.Infrastructure.Services
             return await _context.Cities.Where(c => c.Id == cityId).FirstOrDefaultAsync();
         }
 
+        public async Task<bool> CityForCityIdExists(int cityId)
+        {
+            return await _context.Cities.AnyAsync(c => c.Id == cityId);
+        }
+
         public  async Task<PointOfInterest> GetPointOfInterestForCityByPointOfInterestIdAsync(int cityId, int pointOfInterestId)
         {
-            return await _context.PointsOfInterest.Where(p => p.CityId == cityId && p.Id == pointOfInterestId).FirstOrDefaultAsync();
+            return await _context.PointsOfInterest
+                .Where(p => p.CityId == cityId && p.Id == pointOfInterestId)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<PointOfInterest>> GetAllPointsOfInterestForCityAsync(int cityId)
         {
-            return await _context.PointsOfInterest.Where(prop => prop.CityId == cityId).ToListAsync();
+            return await _context.PointsOfInterest
+                .Where(prop => prop.CityId == cityId).ToListAsync();
         }
     }
 }

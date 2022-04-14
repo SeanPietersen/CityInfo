@@ -6,7 +6,7 @@ namespace CityInfo.Application.Contract
 {
     public interface ICityContract
     {
-        Task<IEnumerable<CityWithoutPointsOfInterestDto>> GetAllCities();
-        Task<CityWithoutPointsOfInterestDto> GetCityById(int id);
+        Task<IEnumerable<CityDto>> GetAllCities();
+        Task<CityDto> GetCityById(int id, bool includePointsOfInterest = false);
     }
 }

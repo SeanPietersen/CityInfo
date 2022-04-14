@@ -5,15 +5,14 @@ namespace CityInfo.Application.Mapper
 {
     public class CityWithoutPointOfInterestMapper
     {
-        public CityWithoutPointsOfInterestDto Map(City city)
+        public CityDto Map(City city)
         {
-            CityWithoutPointsOfInterestDto cityWithoutPointOfInterestDto = new CityWithoutPointsOfInterestDto()
+            CityDto cityWithoutPointOfInterestDto = new CityDto()
             {
                 Id = city.Id,
                 Name = city.Name,
                 Description = city.Description
             };
-
             return cityWithoutPointOfInterestDto;
         }
     }
@@ -27,7 +26,7 @@ namespace CityInfo.Application.Mapper
  *      {
  *             public CityProfile()
  *             {
- *                  CreateMap<Entities.City, Models.CItyWithoutPointOfInterestDto>();
+ *                  CreateMap<Entities.City, Models.CityWithoutPointOfInterestDto>();
  *             }
  *      }
  *  }

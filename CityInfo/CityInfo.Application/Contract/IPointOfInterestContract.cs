@@ -7,7 +7,7 @@ namespace CityInfo.Application.Contract
 {
     public interface IPointOfInterestContract
     {
-        IEnumerable<PointOfInterestDto> GetPointsOfInterestByCityId(int cityId);
+        IEnumerable<PointOfInterestDto> GetAllPointsOfInterestByCityId(int cityId);
         PointOfInterestDto GetPointOfInterestById(int cityId, int pointOfInterestId);
 
         PointOfInterestDto CreatePointOfInterestById(int cityId, PointOfInterestForCreationDto pointOfInterest);
