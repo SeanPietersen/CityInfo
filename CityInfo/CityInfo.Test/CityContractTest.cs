@@ -7,6 +7,7 @@ using Xunit;
 using System.Linq;
 using System.Threading.Tasks;
 using NSubstitute.ReturnsExtensions;
+using AutoMapper;
 
 namespace CityInfo.Test
 {
@@ -14,12 +15,14 @@ namespace CityInfo.Test
     {
         private readonly ICityContract _sut;
         private readonly ICityInfoRepository _cityInfoRepository;
+        private readonly IMapper _mapper;
 
         public CityContractTest()
         {
             _cityInfoRepository = Substitute.For<ICityInfoRepository>();
+            _mapper = Substitute.For<IMapper>();
             //sut = system under test
-            _sut = new CityContract(_cityInfoRepository);
+            _sut = new CityContract(_cityInfoRepository, _mapper);
         }
 
         [Fact]

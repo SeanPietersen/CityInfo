@@ -59,5 +59,36 @@ namespace CityInfo.Infrastructure.Services
             return await _context.PointsOfInterest
                 .Where(prop => prop.CityId == cityId).ToListAsync();
         }
+
+        public async Task AddPointOfInterestForCityAsync(int cityId, PointOfInterest pointOfInterest)
+        {
+            var city = await GetCityByCityIdAsync(cityId, false);
+            if(city != null)
+            {
+                city.PointOfInterest.Add(pointOfInterest);
+            }
+        }
+
+        public async Task<bool> SaveChangesAsync()
+        {
+            return (await _context.SaveChangesAsync() >= 0);
+        }
+
+        public void DeletePointOfInterest(PointOfInterest pointOfInterest)
+        {
+            _context.PointsOfInterest.Remove(pointOfInterest);
+        }
+
+        public bool UpdatePointOfInterestForCity(PointOfInterest pointOfInterest)
+        {
+            var entity = _context.PointsOfInterest.Update(pointOfInterest);
+
+            if (entity == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

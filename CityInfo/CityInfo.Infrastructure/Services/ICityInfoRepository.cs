@@ -11,5 +11,9 @@ namespace CityInfo.Infrastructure.Services
         Task<bool> CityForCityIdExists(int cityId);
         Task<IEnumerable<PointOfInterest>> GetAllPointsOfInterestForCityAsync(int cityId);
         Task<PointOfInterest?> GetPointOfInterestForCityByPointOfInterestIdAsync(int cityId, int pointOfInterestId);
+        Task AddPointOfInterestForCityAsync(int cityId, PointOfInterest pointOfInterest);
+        bool UpdatePointOfInterestForCity(PointOfInterest pointOfInterest);
+        void DeletePointOfInterest(PointOfInterest pointOfInterest);
+        Task<bool> SaveChangesAsync();
     }
 }

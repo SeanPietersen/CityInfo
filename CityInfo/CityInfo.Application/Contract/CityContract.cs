@@ -1,4 +1,5 @@
-﻿using CityInfo.Application.Dto;
+﻿using AutoMapper;
+using CityInfo.Application.Dto;
 using CityInfo.Application.Mapper;
 using CityInfo.Infrastructure.Services;
 using System.Collections.Generic;
@@ -9,28 +10,19 @@ namespace CityInfo.Application.Contract
     public class CityContract : ICityContract
     {
         private readonly ICityInfoRepository _cityInfoRepository;
-        private readonly CityWithoutPointOfInterestMapper _mapperWithoutPointOfInterest = new CityWithoutPointOfInterestMapper();
-        private readonly CityMapper _mapperWithPointOfInterest = new CityMapper();
+        private readonly IMapper _mapper;
 
-        public CityContract(ICityInfoRepository cityInfoRepository)
+        public CityContract(ICityInfoRepository cityInfoRepository, IMapper mapper)
         {
             _cityInfoRepository = cityInfoRepository;
+            _mapper = mapper ?? throw new System.ArgumentNullException(nameof(mapper));
         }
 
         public async Task<IEnumerable<CityDto>> GetAllCities()
         {
             var cityEntities = await _cityInfoRepository.GetCitiesAsync();
 
-            var results = new List<CityDto>();
-
-            foreach (var cityEntity in cityEntities)
-            {
-                var entity = _mapperWithoutPointOfInterest.Map(cityEntity);
-
-                results.Add(entity);
-            }
-
-            return results;
+            return _mapper.Map<IEnumerable<CityDto>>(cityEntities);
         }
 
         public async Task<CityDto> GetCityById(int id, bool includePointsOfInterest = false)
@@ -44,10 +36,10 @@ namespace CityInfo.Application.Contract
 
             if (includePointsOfInterest)
             {
-                return (_mapperWithPointOfInterest.Map(city));
+                return (_mapper.Map<CityWithPointOfInterestDto>(city));
             }
 
-            return _mapperWithoutPointOfInterest.Map(city);
+            return _mapper.Map<CityDto>(city);
         }
     }
 }

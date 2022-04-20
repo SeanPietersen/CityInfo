@@ -52,74 +52,75 @@ namespace CityInfo.API.Controllers
             return Ok(pointOfInterest);
         }
 
-        //[HttpPost]
-        //public ActionResult<PointOfInterestDto> CreatePointOfInterest(int cityId, [FromBody] PointOfInterestForCreationDto pointOfInterest)
-        //{
-        //    var createdPointOfInterest = _pointOfInterestContract.CreatePointOfInterestById(cityId, pointOfInterest);
+        [HttpPost]
+        public ActionResult<PointOfInterestDto> CreatePointOfInterest(int cityId, [FromBody] PointOfInterestForCreationDto pointOfInterest)
+        {
+            var createdPointOfInterest = _pointOfInterestContract.CreatePointOfInterestById(cityId, pointOfInterest).Result;
 
-        //    if (createdPointOfInterest == null)
-        //    {
-        //        return NotFound();
-        //    }
+            if (createdPointOfInterest == null)
+            {
+                return NotFound();
+            }
 
-        //    return Ok(createdPointOfInterest);
-        //}
+            //return CreatedAtRoute("GetPointOfInterest", createdPointOfInterest);
+            return Ok(createdPointOfInterest);
+        }
 
-        //[HttpPut("{pointofinterestid}")]
-        //public ActionResult UpdatePointOfInterest(int cityId, int pointOfInterestId, PointOfInterestForUpdateDto pointOfInterest)
-        //{
+        [HttpPut("{pointofinterestid}")]
+        public ActionResult UpdatePointOfInterest(int cityId, int pointOfInterestId, PointOfInterestForUpdateDto pointOfInterest)
+        {
 
-        //    var pointOfInterestFromStore = _pointOfInterestContract.UpdatePointOfInterestById(cityId,
-        //                                                                                    pointOfInterestId,
-        //                                                                                    pointOfInterest);
+            var pointOfInterestFromStore = _pointOfInterestContract.UpdatePointOfInterestById(cityId,
+                                                                                            pointOfInterestId,
+                                                                                            pointOfInterest);
 
-        //    if (pointOfInterestFromStore == null)
-        //    {
-        //        return NotFound();
-        //    }
+            if (pointOfInterestFromStore == null)
+            {
+                return NotFound();
+            }
 
-        //    return NoContent();
-        //}
+            return NoContent();
+        }
 
-        ////[HttpPatch("{pointofinterestid}")]
-        ////public ActionResult PartiallUpdatePointOfInterest(int cityId, int pointOfInterestId,
-        ////    JsonPatchDocument<PointOfInterestForUpdateDto> patchDocumentDto)
-        ////{
+        [HttpPatch("{pointofinterestid}")]
+        public ActionResult PartiallUpdatePointOfInterest(int cityId, int pointOfInterestId,
+            JsonPatchDocument<PointOfInterestForUpdateDto> patchDocumentDto)
+        {
 
-        ////    var pointOfInterestFromStoreDto = _pointOfInterestContract.PartiallUpdatePointOfInterestById(cityId,
-        ////                                                                                              pointOfInterestId,
-        ////                                                                                              patchDocumentDto);
-        ////    if (pointOfInterestFromStoreDto == null)
-        ////    {
-        ////        return NotFound();
-        ////    }
+            var pointOfInterestFromStoreDto = _pointOfInterestContract.PartiallUpdatePointOfInterestById(cityId,
+                                                                                                      pointOfInterestId,
+                                                                                                      patchDocumentDto);
+            if (pointOfInterestFromStoreDto == null)
+            {
+                return NotFound();
+            }
 
-        ////    patchDocumentDto.ApplyTo(pointOfInterestToPatch, ModelState);
+            //patchDocumentDto.ApplyTo(pointOfInterestToPatch, ModelState);
 
-        ////    //if (!ModelState.IsValid)
-        ////    //{
-        ////    //    return BadRequest(ModelState);
-        ////    //}
+            //if (!ModelState.IsValid)
+            //{
+            //    return BadRequest(ModelState);
+            //}
 
-        ////    //if (!TryValidateModel(pointOfInterestToPatch))
-        ////    //{
-        ////    //    return BadRequest(ModelState);
-        ////    //}
+            //if (!TryValidateModel(pointOfInterestToPatch))
+            //{
+            //    return BadRequest(ModelState);
+            //}
 
-        ////    return NoContent();
-        ////}
+            return NoContent();
+        }
 
-        //[HttpDelete("{pointOfInterestId}")]
-        //public ActionResult DeletePointOfInterest(int cityId, int pointOfInterestId)
-        //{
-        //    var pointOfInterestFromStore = _pointOfInterestContract.DeletePointOfInterestById(cityId, pointOfInterestId);
+        [HttpDelete("{pointOfInterestId}")]
+        public ActionResult DeletePointOfInterest(int cityId, int pointOfInterestId)
+        {
+            var pointOfInterestFromStore = _pointOfInterestContract.DeletePointOfInterestById(cityId, pointOfInterestId);
 
-        //    if (pointOfInterestFromStore == null)
-        //    {
-        //        return NotFound();
-        //    }
+            if (pointOfInterestFromStore == null)
+            {
+                return NotFound();
+            }
 
-        //    return NoContent();
-        //}
+            return NoContent();
+        }
     }
 }

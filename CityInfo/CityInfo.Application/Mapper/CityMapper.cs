@@ -10,9 +10,9 @@ namespace CityInfo.Application.Mapper
 {
     public class CityMapper
     {
-        public CityWithPointOfIntrestDto Map(City city)
+        public CityWithPointOfInterestDto Map(City city)
         {
-            CityWithPointOfIntrestDto cityDto = new CityWithPointOfIntrestDto()
+            CityWithPointOfInterestDto cityDto = new CityWithPointOfInterestDto()
             {
                 Id = city.Id,
                 Name = city.Name,

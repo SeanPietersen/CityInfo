@@ -12,6 +12,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using CityInfo.Application.Contract;
+using System;
+using AutoMapper;
+using CityInfo.Application.Profiles;
 
 namespace CityInfo.API
 {
@@ -62,6 +65,18 @@ namespace CityInfo.API
                 Configuration["ConnectionStrings:CityInfoDBConnectionString"]));
 
             services.AddScoped<ICityInfoRepository, CityInfoRepository>();
+
+            //services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new CityProfile());
+                mc.AddProfile(new PointOfInterestProfile());
+            });
+
+            IMapper mapper = mapperConfig.CreateMapper();
+
+            services.AddSingleton(mapper);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

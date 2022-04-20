@@ -2,7 +2,7 @@
 
 namespace CityInfo.Application.Dto
 {
-    public class CityWithPointOfIntrestDto: CityDto
+    public class CityWithPointOfInterestDto: CityDto
     {
         public int NumberOfPointsOfInterest
         {
