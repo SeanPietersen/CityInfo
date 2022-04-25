@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using CityInfo.Application.Dto;
-using CityInfo.Application.Mapper;
 using CityInfo.Infrastructure.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,6 +10,7 @@ namespace CityInfo.Application.Contract
     {
         private readonly ICityInfoRepository _cityInfoRepository;
         private readonly IMapper _mapper;
+        const int maxCitiesPageSize = 20;
 
         public CityContract(ICityInfoRepository cityInfoRepository, IMapper mapper)
         {
@@ -18,11 +18,17 @@ namespace CityInfo.Application.Contract
             _mapper = mapper ?? throw new System.ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<IEnumerable<CityDto>> GetAllCities()
+        public async Task<(IEnumerable<CityDto>, PaginationMetadata)> GetAllCities(
+            string name, string searchQuery, int pageNumber, int pageSize)
         {
-            var cityEntities = await _cityInfoRepository.GetCitiesAsync();
+            if (pageSize > maxCitiesPageSize)
+            {
+                pageSize = maxCitiesPageSize;
+            }
 
-            return _mapper.Map<IEnumerable<CityDto>>(cityEntities);
+            var (cityEntities, paginationMetadata) = await _cityInfoRepository.GetCitiesAsync(name, searchQuery, pageNumber, pageSize);
+
+            return (_mapper.Map<IEnumerable<CityDto>>(cityEntities), paginationMetadata);
         }
 
         public async Task<CityDto> GetCityById(int id, bool includePointsOfInterest = false)

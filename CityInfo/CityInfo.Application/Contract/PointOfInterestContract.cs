@@ -31,6 +31,7 @@ namespace CityInfo.Application.Contract
 
         public IEnumerable<PointOfInterestDto> GetAllPointsOfInterestByCityId(int cityId)
         {
+
             if (!_cityInfoRepository.CityForCityIdExists(cityId).Result)
             {
                 _logger.LogCritical($"City with id {cityId} wasn't found when accessing points of interest.");
@@ -61,7 +62,7 @@ namespace CityInfo.Application.Contract
             {
                 return null;
             }
-            var result = _mapper.Map<PointOfInterestDto>(pointOfInterest);
+
             return _mapper.Map<PointOfInterestDto>(pointOfInterest);
         }
 
@@ -101,7 +102,6 @@ namespace CityInfo.Application.Contract
             
 
             var pointOfInterestToReturn = _mapper.Map(pointOfInterestDto, pointOfInterestEntity);
-            //PointOfInterest pointOfInterestToReturn = _mapper.Map<PointOfInterestDto>(pointOfInterestDto);
 
             var updatePointOfIntrestStatus = _cityInfoRepository.UpdatePointOfInterestForCity(pointOfInterestToReturn);
 
@@ -112,10 +112,10 @@ namespace CityInfo.Application.Contract
 
             var result = new PointOfInterestDto();
 
-            return _mapper.Map(pointOfInterestToReturn, result); ;
+            return _mapper.Map(pointOfInterestToReturn, result);
         }
 
-        public async Task<PointOfInterest> PartiallUpdatePointOfInterestById(int cityId, int pointOfInterestId, JsonPatchDocument<PointOfInterestForUpdateDto> patchDocumentDto)
+        public async Task<PointOfInterestDto> PartiallUpdatePointOfInterestById(int cityId, int pointOfInterestId, JsonPatchDocument<PointOfInterestForUpdateDto> patchDocumentDto)
         {
             if (!_cityInfoRepository.CityForCityIdExists(cityId).Result)
             {
@@ -138,11 +138,12 @@ namespace CityInfo.Application.Contract
 
             await _cityInfoRepository.SaveChangesAsync();
 
+            var result = new PointOfInterestDto();
 
-            return pointOfInterestToReturn;
+            return _mapper.Map(pointOfInterestToReturn, result);
         }
 
-        public async Task<PointOfInterest> DeletePointOfInterestById(int cityId, int pointOfInterestId)
+        public async Task<PointOfInterestDto> DeletePointOfInterestById(int cityId, int pointOfInterestId)
         {
             if (!_cityInfoRepository.CityForCityIdExists(cityId).Result)
             {
@@ -165,7 +166,9 @@ namespace CityInfo.Application.Contract
             _mailService.Send("Point of interest deleted",
                 $"Point of interest {pointOfInterestEntity.Name} with id {pointOfInterestEntity.Id} was deleted.");
 
-            return pointOfInterestEntity;
+            var result = new PointOfInterestDto();
+
+            return _mapper.Map(pointOfInterestEntity, result);
         }
     }
 }

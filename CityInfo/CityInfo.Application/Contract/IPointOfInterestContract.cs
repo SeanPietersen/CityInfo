@@ -15,11 +15,11 @@ namespace CityInfo.Application.Contract
 
         Task<PointOfInterestDto> UpdatePointOfInterestById(int cityId, int pointOfInterestId, PointOfInterestForUpdateDto pointOfInterest);
 
-        Task<PointOfInterest> PartiallUpdatePointOfInterestById(int cityId,
+        Task<PointOfInterestDto> PartiallUpdatePointOfInterestById(int cityId,
                                                              int pointOfInterestId,
                                                              JsonPatchDocument<PointOfInterestForUpdateDto> patchDocument);
 
-        Task<PointOfInterest> DeletePointOfInterestById(int cityId, int pointOfInterestId);
+        Task<PointOfInterestDto> DeletePointOfInterestById(int cityId, int pointOfInterestId);
 
     }
 }

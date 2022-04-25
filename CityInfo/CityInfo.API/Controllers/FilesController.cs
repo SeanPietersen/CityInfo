@@ -1,14 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CityInfo.API.Controllers
 {
     [Route("api/files")]
+    [Authorize]
     [ApiController]
     public class FilesController : Controller
     {
@@ -23,18 +21,18 @@ namespace CityInfo.API.Controllers
 
         [HttpGet("{fileId}")]
         public ActionResult GetFile(string fileId)
-        {          
+        {
             //look up the actual file, depending on the fieldId...
             //demo code
             var pathToFile = "creating-the-api-and-returning-resources-slides.pdf";
 
             //check whether the file exists
-            if(!System.IO.File.Exists(pathToFile))
+            if (!System.IO.File.Exists(pathToFile))
             {
                 return NotFound();
             }
 
-            if(!_fileExtensionContentTypeProvider.TryGetContentType(pathToFile, out var contentType))
+            if (!_fileExtensionContentTypeProvider.TryGetContentType(pathToFile, out var contentType))
             {
                 contentType = "application/octet-stream";
             }

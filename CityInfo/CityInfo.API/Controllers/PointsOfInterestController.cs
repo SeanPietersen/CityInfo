@@ -2,33 +2,46 @@
 using CityInfo.Application.Contract;
 using CityInfo.Application.Dto;
 using CityInfo.Infrastructure.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CityInfo.API.Controllers
 {
     [Route("api/cities/{cityId}/pointsofinterest")]
+    [Authorize(Policy = "MustBeFromCapeTown")]
     [ApiController]
     public class PointsOfInterestController : ControllerBase
     {
         private readonly ILogger<PointsOfInterestController> _logger;
         private readonly IPointOfInterestContract _pointOfInterestContract;
         private readonly IMailService _mailService;
+        private readonly ICityInfoRepository _cityInfoRepository;
 
         public PointsOfInterestController(ILogger<PointsOfInterestController> logger,
-                                          IPointOfInterestContract pointOfInterestContract, IMailService mailService)
+                                          IPointOfInterestContract pointOfInterestContract, 
+                                          IMailService mailService,
+                                          ICityInfoRepository cityInfoRepository)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _pointOfInterestContract = pointOfInterestContract ?? throw new ArgumentNullException(nameof(pointOfInterestContract));
             _mailService = mailService ?? throw new ArgumentNullException(nameof(mailService));
+            _cityInfoRepository = cityInfoRepository;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<PointOfInterestDto>> GetAllPointsOfInterest(int cityId)
         {
+            var cityName = User.Claims.FirstOrDefault(c => c.Type == "city")?.Value;
+            if(!_cityInfoRepository.CityNameMatchesCityId(cityName, cityId).Result)
+            {
+                return Forbid();
+            }
+
             var pointOfInterests = _pointOfInterestContract.GetAllPointsOfInterestByCityId(cityId);
 
             if (pointOfInterests == null)

@@ -1,6 +1,7 @@
 using AutoMapper;
 using CityInfo.Application.Contract;
 using CityInfo.Application.Dto;
+using CityInfo.Application.Profiles;
 using CityInfo.Domain;
 using CityInfo.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
@@ -12,20 +13,21 @@ using Xunit;
 
 namespace CityInfo.Test
 {
-    public class PointOfInterestContractTest
+    public class PointOfInterestContractTest: ContextTest
     {
         private readonly IPointOfInterestContract _pointOfInterest;
         private readonly IMailService _mailService;
         private readonly ICityInfoRepository _cityInfoRepository;
         private readonly ILogger<PointOfInterestContract> _logger;
-        private readonly IMapper _mapper;
 
         public PointOfInterestContractTest()
         {
             _mailService = Substitute.For<IMailService>();
+
             _cityInfoRepository = Substitute.For<ICityInfoRepository>();
+
             _logger = Substitute.For<ILogger<PointOfInterestContract>>();
-            _mapper = Substitute.For<IMapper>();
+
             _pointOfInterest = new PointOfInterestContract(_logger, _mailService, _cityInfoRepository, _mapper);
         }
 
@@ -161,73 +163,63 @@ namespace CityInfo.Test
             Assert.Null(actual);
         }
 
-        //[Fact]
-        //public void CreatePointOfInterestById_IsSuccessful()
-        //{
-        //    //Arrange
-        //    int cityId = 1;
-        //    int pointOfInterestId = 3;
+        [Fact]
+        public void CreatePointOfInterestById_IsSuccessful()
+        {
+            //Arrange
+            int cityId = 1;
 
-        //    var cityInDb = new City()
-        //    {
-        //        Id = 1,
-        //        Name = "New York City",
-        //        Description = "The one with that big park",
-        //    };
+            var cityInDb = new City()
+            {
+                Id = 1,
+                Name = "New York City",
+                Description = "The one with that big park",
+            };
 
-        //    var pointOfInterestInDb = new List<PointOfInterest>()
-        //    {
-        //        new PointOfInterest()
-        //        {
-        //            Id = 1,
-        //            Name = "Central Park",
-        //            Description = "The most visited urban park in the United States"
-        //        },
-        //        new PointOfInterest()
-        //        {
-        //            Id = 2,
-        //            Name = "Empire State Building",
-        //            Description = "A 102-story skyscraper located in Midtown Manhattan",
-        //            City = cityInDb,
-        //            CityId = cityInDb.Id
-        //        }
-        //    };
+            var pointOfInterestInDb = new List<PointOfInterest>()
+            {
+                new PointOfInterest()
+                {
+                    Id = 1,
+                    Name = "Central Park",
+                    Description = "The most visited urban park in the United States"
+                },
+                new PointOfInterest()
+                {
+                    Id = 2,
+                    Name = "Empire State Building",
+                    Description = "A 102-story skyscraper located in Midtown Manhattan",
+                    City = cityInDb,
+                    CityId = cityInDb.Id
+                }
+            };
 
-        //    PointOfInterestForCreationDto pointOfInterestDto = new PointOfInterestForCreationDto()
-        //    {
-        //        Name = "Big Apple",
-        //        Description = "The most visited attraction site in the New York"
-        //    };
+            PointOfInterestForCreationDto pointOfInterestDto = new PointOfInterestForCreationDto()
+            {
+                Name = "Big Apple",
+                Description = "The most visited attraction site in the New York"
+            };
 
-        //    PointOfInterest pointOfInterest = new PointOfInterest()
-        //    {
-        //        Name = "Big Apple",
-        //        Description = "The most visited attraction site in the New York"
-        //    };
+            PointOfInterest pointOfInterest = new PointOfInterest()
+            {
+                Name = "Big Apple",
+                Description = "The most visited attraction site in the New York"
+            };
 
-        //    _cityInfoRepository.CityForCityIdExists(cityId).Returns(true);
+            _cityInfoRepository.CityForCityIdExists(cityId).Returns(true);
 
-        //    _mapper.Map<Domain.PointOfInterest>(pointOfInterestDto).Returns(pointOfInterest);
+            _cityInfoRepository.AddPointOfInterestForCityAsync(cityId, Arg.Any<PointOfInterest>());
 
-        //    _cityInfoRepository.AddPointOfInterestForCityAsync(cityId, Arg.Any<PointOfInterest>());
+            _cityInfoRepository.SaveChangesAsync().Returns(true);
 
-        //    _cityInfoRepository.SaveChangesAsync().Returns(true);
 
-        //    //_mapper.Map<Application.Dto.PointOfInterestDto>(pointOfInterest).Returns(pointOfInterestDto);
+            //Act
+            PointOfInterestDto actual = _pointOfInterest.CreatePointOfInterestById(cityId, pointOfInterestDto).Result;
 
-        //    _cityInfoRepository.GetCityByCityIdAsync(cityId, true).Returns(cityInDb);
-
-        //    _cityInfoRepository.CityForCityIdExists(cityId).Returns(true);
-
-        //    _cityInfoRepository.GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).Returns(pointOfInterest);
-
-        //    //Act
-        //    PointOfInterestDto actual = _pointOfInterest.CreatePointOfInterestById(cityId, pointOfInterestDto).Result;
-
-        //    //Assert
-        //    Assert.Equal(pointOfInterest.Name, actual.Name);
-        //    Assert.Equal(pointOfInterest.Description, actual.Description);
-        //}
+            //Assert
+            Assert.Equal(pointOfInterest.Name, actual.Name);
+            Assert.Equal(pointOfInterest.Description, actual.Description);
+        }
 
         [Fact]
         public void UpdatePointOfInterestById_ShouldReturnNull_WhenCityIdIsInvalid()
@@ -346,127 +338,129 @@ namespace CityInfo.Test
             Assert.Equal(pointOfInterestForUpdateDto.Description, actual.Description);
         }
 
-        //[Fact]
-        //public void DeletePointOfInterestById_ShouldReturnNull_WhenCityIdIsInvalid()
-        //{
-        //    //Arrange
-        //    var cityId = 0;
+        [Fact]
+        public void DeletePointOfInterestById_ShouldReturnNull_WhenCityIdIsInvalid()
+        {
+            //Arrange
+            var cityId = 0;
 
-        //    bool mailSent = false;
+            bool mailSent = false;
 
-        //    int pointOfInterestId = 1;
+            int pointOfInterestId = 1;
 
-        //    _cityInfoRepository.GetCityByCityIdAsync(cityId, true).ReturnsNull();
+            _cityInfoRepository.GetCityByCityIdAsync(cityId, true).ReturnsNull();
 
-        //    _mailService.When(x => x.Send(Arg.Any<string>(), Arg.Any<string>())).Do(x => mailSent = true);
+            _mailService.When(x => x.Send(Arg.Any<string>(), Arg.Any<string>())).Do(x => mailSent = true);
 
-        //    //Act
-        //    PointOfInterestDto actual = _pointOfInterest.DeletePointOfInterestById(cityId, pointOfInterestId);
+            //Act
+            var actual = _pointOfInterest.DeletePointOfInterestById(cityId, pointOfInterestId).Result;
 
-        //    //Assert
-        //    Assert.Null(actual);
-        //    Assert.False(mailSent);
-        //}
+            //Assert
+            Assert.Null(actual);
+            Assert.False(mailSent);
+        }
 
-        //[Fact]
-        //public void DeletePointOfInterestById_ShouldReturnNull_WhenPointOfInterestIdIsInvalid()
-        //{
-        //    //Arrange
+        [Fact]
+        public void DeletePointOfInterestById_ShouldReturnNull_WhenPointOfInterestIdIsInvalid()
+        {
+            //Arrange
 
-        //    int cityId = 1;
+            int cityId = 1;
 
-        //    int pointOfInterestId = 0;
+            int pointOfInterestId = 0;
 
-        //    bool mailSent = false;
+            bool mailSent = false;
 
-        //    var cityInDb = new City()
-        //    {
-        //        Id = 1,
-        //        Name = "MOCK",
-        //        Description = "TEST",
-        //        PointOfInterest = new List<PointOfInterest>()
-        //        {
-        //            new PointOfInterest()
-        //            {
-        //                Id = 1,
-        //                Name = "Central Park",
-        //                Description = "The most visited urban park in the United States"
-        //            },
-        //            new PointOfInterest()
-        //            {
-        //                Id = 2,
-        //                Name = "Empire State Building",
-        //                Description = "A 102-story skyscraper located in Midtown Manhattan"
-        //            }
-        //        }
-        //    };
+            var cityInDb = new City()
+            {
+                Id = 1,
+                Name = "MOCK",
+                Description = "TEST",
+                PointOfInterest = new List<PointOfInterest>()
+                {
+                    new PointOfInterest()
+                    {
+                        Id = 1,
+                        Name = "Central Park",
+                        Description = "The most visited urban park in the United States"
+                    },
+                    new PointOfInterest()
+                    {
+                        Id = 2,
+                        Name = "Empire State Building",
+                        Description = "A 102-story skyscraper located in Midtown Manhattan"
+                    }
+                }
+            };
 
-        //    _cityInfoRepository.GetCityByCityIdAsync(cityId, true).Returns(cityInDb);
-        //    _cityInfoRepository.GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).ReturnsNull();
+            _cityInfoRepository.GetCityByCityIdAsync(cityId, true).Returns(cityInDb);
+            _cityInfoRepository.GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).ReturnsNull();
 
-        //    _mailService.When(x => x.Send(Arg.Any<string>(), Arg.Any<string>())).Do(x => mailSent = true);
+            _mailService.When(x => x.Send(Arg.Any<string>(), Arg.Any<string>())).Do(x => mailSent = true);
 
-        //    //Act
-        //    PointOfInterestDto actual = _pointOfInterest.DeletePointOfInterestById(cityId, pointOfInterestId);
+            //Act
+            var actual = _pointOfInterest.DeletePointOfInterestById(cityId, pointOfInterestId).Result;
 
-        //    //Assert
-        //    Assert.Null(actual);
-        //    Assert.False(mailSent);
-        //}
+            //Assert
+            Assert.Null(actual);
+            Assert.False(mailSent);
+        }
 
-        //[Fact]
-        //public void DeletePointOfInterestById_IsSuccessful()
-        //{
-        //    //Arrange
-        //    int cityId = 1;
+        [Fact]
+        public void DeletePointOfInterestById_IsSuccessful()
+        {
+            //Arrange
+            int cityId = 1;
 
-        //    bool mailSent = false;
+            bool mailSent = false;
 
-        //    int pointOfInterestId = 1;
+            int pointOfInterestId = 1;
 
-        //    var expected = new PointOfInterest()
-        //    {
-        //        Id = 1,
-        //        Name = "Central Park",
-        //        Description = "The most visited urban park in the United States"
-        //    };
+            var expected = new PointOfInterest()
+            {
+                Id = 1,
+                Name = "Central Park",
+                Description = "The most visited urban park in the United States"
+            };
 
-        //    var cityInDb = new City()
-        //    {
-        //        Id = 1,
-        //        Name = "MOCK",
-        //        Description = "TEST",
-        //        PointOfInterest = new List<PointOfInterest>()
-        //        {
-        //            new PointOfInterest()
-        //            {
-        //                Id = 1,
-        //                Name = "Central Park",
-        //                Description = "The most visited urban park in the United States"
-        //            },
-        //            new PointOfInterest()
-        //            {
-        //                Id = 2,
-        //                Name = "Empire State Building",
-        //                Description = "A 102-story skyscraper located in Midtown Manhattan"
-        //            }
-        //        }
-        //    };
+            var cityInDb = new City()
+            {
+                Id = 1,
+                Name = "MOCK",
+                Description = "TEST",
+                PointOfInterest = new List<PointOfInterest>()
+                {
+                    new PointOfInterest()
+                    {
+                        Id = 1,
+                        Name = "Central Park",
+                        Description = "The most visited urban park in the United States"
+                    },
+                    new PointOfInterest()
+                    {
+                        Id = 2,
+                        Name = "Empire State Building",
+                        Description = "A 102-story skyscraper located in Midtown Manhattan"
+                    }
+                }
+            };
 
-        //    _cityInfoRepository.GetCityByCityIdAsync(cityId, true).Returns(cityInDb);
+            _cityInfoRepository.CityForCityIdExists(cityId).Returns(true);
 
-        //    _cityInfoRepository.GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).Returns(expected);
+            _cityInfoRepository.GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).Returns(expected);
 
-        //    _mailService.When(x => x.Send(Arg.Any<string>(), Arg.Any<string>())).Do(x => mailSent = true);
+            _cityInfoRepository.SaveChangesAsync().Returns(true);
 
-        //    //Act
-        //    PointOfInterestDto actual = _pointOfInterest.DeletePointOfInterestById(cityId, pointOfInterestId);
+            _mailService.When(x => x.Send(Arg.Any<string>(), Arg.Any<string>())).Do(x => mailSent = true);
 
-        //    //Assert
-        //    Assert.Equal(expected.Name, actual.Name);
-        //    Assert.Equal(expected.Description, actual.Description);
-        //    Assert.True(mailSent);
-        //}
+            //Act
+            var actual = _pointOfInterest.DeletePointOfInterestById(cityId, pointOfInterestId).Result;
+
+            //Assert
+            Assert.Equal(expected.Name, actual.Name);
+            Assert.Equal(expected.Description, actual.Description);
+            Assert.True(mailSent);
+        }
 
 
     }

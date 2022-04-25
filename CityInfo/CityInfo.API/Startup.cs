@@ -1,6 +1,8 @@
-using CityInfo.Infrastructure.DbContexts;
-using CityInfo.Application;
+using AutoMapper;
+using CityInfo.Application.Contract;
+using CityInfo.Application.Profiles;
 using CityInfo.Infrastructure;
+using CityInfo.Infrastructure.DbContexts;
 using CityInfo.Infrastructure.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,12 +11,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using CityInfo.Application.Contract;
-using System;
-using AutoMapper;
-using CityInfo.Application.Profiles;
+using System.Text;
 
 namespace CityInfo.API
 {
@@ -61,6 +61,8 @@ namespace CityInfo.API
 
             services.AddTransient<ICityContract, CityContract>();
 
+            services.AddTransient<IAuthenticationContract, AuthenticationContract>();
+
             services.AddDbContext<CityInfoContext>(dbContextOptions => dbContextOptions.UseSqlite(
                 Configuration["ConnectionStrings:CityInfoDBConnectionString"]));
 
@@ -77,6 +79,31 @@ namespace CityInfo.API
             IMapper mapper = mapperConfig.CreateMapper();
 
             services.AddSingleton(mapper);
+
+            services.AddAuthentication("Bearer")
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new()
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = Configuration["Authentication:Issuer"],
+                        ValidAudience = Configuration["Authentication:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.ASCII.GetBytes(Configuration["Authentication:SecretForKey"]))
+                    };
+
+                });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("MustBeFromCapeTown", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim("city", "Cape Town");
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -92,6 +119,8 @@ namespace CityInfo.API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
