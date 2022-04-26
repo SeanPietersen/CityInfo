@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CityInfo.API</name>
+    </assembly>
+    <members>
+        <member name="M:CityInfo.API.Controllers.AuthenticationController.Authenticate(CityInfo.Application.Authentication.AuthenticationRequestBody)">
+            <summary>
+            Authenticate the request
+            </summary>
+            <param name="authenticationRequestBody">The name that needs to be authenticated</param>
+            <returns>An IAction Result</returns>
+            <response code="200">Authentication Successful</response>
+            <response code="401">Authentication Unsuccessful</response>
+        </member>
+        <member name="M:CityInfo.API.Controllers.CitiesController.GetAllCities(System.String,System.String,System.Int32,System.Int32)">
+            <summary>
+            Get all cities
+            </summary>
+            <param name="name">name to limit the collection of cities to return</param>
+            <param name="searchQuery">adding matching items to the collection of cities to return</param>
+            <param name="pageNumber">The number of cities to return</param>
+            <param name="pageSize">The size of the cities to return</param>
+            <returns>IAction Result</returns>
+            <response code="200">Returns all the requested cities</response>
+        </member>
+        <member name="M:CityInfo.API.Controllers.CitiesController.GetCityById(System.Int32,System.Boolean)">
+            <summary>
+            Get a city by id
+            </summary>
+            <param name="id">The id of the city to get</param>
+            <param name="includePointsOfInterest">Whether or not to include the points of interest</param>
+            <returns>An IActionResult</returns>
+            <response code="200">Returns the requested city</response>
+            <response code="404">City was not found</response>
+            <response code="400">A bad requested for a city</response>
+        </member>
+        <member name="M:CityInfo.API.Controllers.FilesController.GetFile(System.String)">
+            <summary>
+            Getting file path
+            </summary>
+            <param name="fileId">id of the file to get</param>
+            <returns>IAction Result</returns>
+            /// <response code="200">File was found successfully</response>
+            <response code="404">File could not be found</response>
+        </member>
+        <member name="M:CityInfo.API.Controllers.PointsOfInterestController.GetAllPointsOfInterest(System.Int32)">
+            <summary>
+            Get all the points of interest
+            </summary>
+            <param name="cityId">City id of the points of interest to get from</param>
+            <returns>IAction Result</returns>
+            <response code="200">Returns the requested points of interest</response>
+            <response code="404">Points of interest were not found</response>
+            <response code="403">City Name does not match city Id</response>
+        </member>
+        <member name="M:CityInfo.API.Controllers.PointsOfInterestController.GetPointOfInterest(System.Int32,System.Int32)">
+            <summary>
+            Get one point of interest for a city
+            </summary>
+            <param name="cityId">City id for point of interest to return</param>
+            <param name="pointOfInterestId">Point of interest id for point of interest to return</param>
+            <returns>IAction Result</returns>
+            <response code="200">Returns the requested point of interest</response>
+            <response code="404">Point of interest were not found</response>
+        </member>
+        <member name="M:CityInfo.API.Controllers.PointsOfInterestController.CreatePointOfInterest(System.Int32,CityInfo.Application.Dto.PointOfInterestForCreationDto)">
+            <summary>
+            Create point of interest
+            </summary>
+            <param name="cityId">City id for point of interest to create</param>
+            <param name="pointOfInterest">Point of interest id for point of interest to create</param>
+            <returns>IAction Result</returns>
+            <response code="200">Created point of interest successful</response>
+            <response code="404">Point of interest to create was not found</response>
+        </member>
+        <member name="M:CityInfo.API.Controllers.PointsOfInterestController.UpdatePointOfInterest(System.Int32,System.Int32,CityInfo.Application.Dto.PointOfInterestForUpdateDto)">
+            <summary>
+            Update point of interest
+            </summary>
+            <param name="cityId">City id for point of interest to update</param>
+            <param name="pointOfInterestId">Point of interest id for the point of interest to update</param>
+            <param name="pointOfInterest">Point of interest to be updated</param>
+            <returns>IAction Result</returns>
+            <response code="204">Content was updated</response>
+            <response code="404">Point of interest to update was not found</response>
+        </member>
+        <member name="M:CityInfo.API.Controllers.PointsOfInterestController.PartiallUpdatePointOfInterest(System.Int32,System.Int32,Microsoft.AspNetCore.JsonPatch.JsonPatchDocument{CityInfo.Application.Dto.PointOfInterestForUpdateDto})">
+            <summary>
+            Partially Update point of interest
+            </summary>
+            <param name="cityId">City id for point of interest to partially update</param>
+            <param name="pointOfInterestId">Point of interest id for point of interest to partially update</param>
+            <param name="patchDocumentDto">Partially updated point of interest</param>
+            <returns>IAction Result</returns>
+            <response code="204">Content was partially updated</response>
+            <response code="404">Point of interest to partially update was not found</response>
+        </member>
+        <member name="M:CityInfo.API.Controllers.PointsOfInterestController.DeletePointOfInterest(System.Int32,System.Int32)">
+            <summary>
+            Delete point of interest
+            </summary>
+            <param name="cityId">City id for point of interest to delete</param>
+            <param name="pointOfInterestId">Point of interest id for point of interest to delete</param>
+            <returns>IAction Result</returns>
+            <response code="204">Point of interest was deleted</response>
+            <response code="404">Point of interest to be deleted was not found</response>
+        </member>
+    </members>
+</doc>

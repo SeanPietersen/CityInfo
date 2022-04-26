@@ -36,7 +36,7 @@ namespace CityInfo.Infrastructure.Services
             return await _context.Cities.AnyAsync(c => c.Id == cityId && c.Name == cityName);
         }
 
-        public async Task<(IEnumerable<City>, PaginationMetadata)> GetCitiesAsync(string? name, string? searchQuery, int pageNumber, int pageSize)
+        public async Task<(IEnumerable<City>, PaginationMetadata)> GetCitiesAsync(string name, string searchQuery, int pageNumber, int pageSize)
         {
              //collection to work from 
             var collection = _context.Cities as IQueryable<City>;

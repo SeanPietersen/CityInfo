@@ -11,24 +11,37 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Text;
 
 namespace CityInfo.API
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class Startup
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Startup(IConfiguration configuration)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             Configuration = configuration;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public IConfiguration Configuration { get; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         // This method gets called by the runtime. Use this method to add services to the container.
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void ConfigureServices(IServiceCollection services)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -42,9 +55,34 @@ namespace CityInfo.API
            }).AddNewtonsoftJson()
            .AddXmlDataContractSerializerFormatters();
 
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "CityInfo.API", Version = "v1" });
+            services.AddSwaggerGen(c => {
+                //c.SwaggerDoc("v1", new OpenApiInfo { Title = "CityInfo.API", Version = "v1" });
+
+                var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
+
+                c.IncludeXmlComments(xmlCommentsFullPath);
+
+                c.AddSecurityDefinition("CityInfoApiBearerAuth", new OpenApiSecurityScheme()
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    Description = "Input a valid token to access this API"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "CityInfoApiBearerAuth"
+                            }
+                        }, new List<string>()
+                    }
+                });
             });
 
             services.AddSingleton<FileExtensionContentTypeProvider>();
@@ -104,10 +142,19 @@ namespace CityInfo.API
                     policy.RequireClaim("city", "Cape Town");
                 });
             });
+
+            services.AddApiVersioning(setupAction =>
+            {
+                setupAction.AssumeDefaultVersionWhenUnspecified = true;
+                setupAction.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+                setupAction.ReportApiVersions = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (env.IsDevelopment())
             {

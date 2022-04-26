@@ -2,8 +2,14 @@
 
 namespace CityInfo.Application.Dto
 {
+    /// <summary>
+    /// A DTO for a city with points of interest
+    /// </summary>
     public class CityWithPointOfInterestDto: CityDto
     {
+        /// <summary>
+        /// Points of interest for a city
+        /// </summary>
         public int NumberOfPointsOfInterest
         {
             get
