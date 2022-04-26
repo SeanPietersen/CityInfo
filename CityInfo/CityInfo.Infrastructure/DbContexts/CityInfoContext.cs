@@ -74,11 +74,12 @@ namespace CityInfo.Infrastructure.DbContexts
             base.OnModelCreating(modelBuilder);
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlite("connectionstring");
-            base.OnConfiguring(optionsBuilder);
-        }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+
+        //    optionsBuilder.UseSqlite("connectionstring");
+        //    base.OnConfiguring(optionsBuilder);
+        //}
     }
 }
 
@@ -90,7 +91,7 @@ namespace CityInfo.Infrastructure.DbContexts
 * ====================================================================================================================================
 * |            |   Zosma                       | 2022-03-29 - Initial Migration. Tables created: PointOfInterest and City.
 * |            |   Zibal                       | 2022-03-29 - Adding data to Tables: PointOfInterest and City
-* |            |   Zavijava                    | 
+* |            |   Zavijava                    | 2022-04-14 - Updating data in Tables: PointOfInterest and City
 * |            |   Zaurak                      | 
 * |            |   Zaniah                      | 
 * |            |   Yildun                      | 

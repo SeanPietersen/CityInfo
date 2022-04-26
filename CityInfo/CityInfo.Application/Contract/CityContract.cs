@@ -1,5 +1,5 @@
-﻿using CityInfo.Application.Dto;
-using CityInfo.Application.Mapper;
+﻿using AutoMapper;
+using CityInfo.Application.Dto;
 using CityInfo.Infrastructure.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,41 +9,43 @@ namespace CityInfo.Application.Contract
     public class CityContract : ICityContract
     {
         private readonly ICityInfoRepository _cityInfoRepository;
-        private readonly CityWithoutPointOfInterestMapper _mapper = new CityWithoutPointOfInterestMapper();
+        private readonly IMapper _mapper;
+        const int maxCitiesPageSize = 20;
 
-        public CityContract(ICityInfoRepository cityInfoRepository)
+        public CityContract(ICityInfoRepository cityInfoRepository, IMapper mapper)
         {
             _cityInfoRepository = cityInfoRepository;
+            _mapper = mapper ?? throw new System.ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<IEnumerable<CityWithoutPointsOfInterestDto>> GetAllCities()
+        public async Task<(IEnumerable<CityDto>, PaginationMetadata)> GetAllCities(
+            string name, string searchQuery, int pageNumber, int pageSize)
         {
-            var cityEntities = await _cityInfoRepository.GetCitiesAsync();
-
-            var results = new List<CityWithoutPointsOfInterestDto>();
-
-            foreach (var cityEntity in cityEntities)
+            if (pageSize > maxCitiesPageSize)
             {
-                var entity = _mapper.Map(cityEntity);
-
-                results.Add(entity);
+                pageSize = maxCitiesPageSize;
             }
 
-            return results;
+            var (cityEntities, paginationMetadata) = await _cityInfoRepository.GetCitiesAsync(name, searchQuery, pageNumber, pageSize);
+
+            return (_mapper.Map<IEnumerable<CityDto>>(cityEntities), paginationMetadata);
         }
 
-        public async Task<CityWithoutPointsOfInterestDto> GetCityById(int id)
+        public async Task<CityDto> GetCityById(int id, bool includePointsOfInterest = false)
         {
-            var city = await _cityInfoRepository.GetCityByCityIdAsync(id, false);
+            var city = await _cityInfoRepository.GetCityByCityIdAsync(id, includePointsOfInterest);
 
             if (city == null)
             {
                 return null;
             }
 
-            var result = _mapper.Map(city);
+            if (includePointsOfInterest)
+            {
+                return (_mapper.Map<CityWithPointOfInterestDto>(city));
+            }
 
-            return result;
+            return _mapper.Map<CityDto>(city);
         }
     }
 }

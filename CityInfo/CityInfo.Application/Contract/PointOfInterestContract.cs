@@ -1,7 +1,7 @@
-﻿using CityInfo.Application.Dto;
+﻿using AutoMapper;
+using CityInfo.Application.Dto;
 using CityInfo.Application.Mapper;
 using CityInfo.Domain;
-using CityInfo.Infrastructure;
 using CityInfo.Infrastructure.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Extensions.Logging;
@@ -17,53 +17,42 @@ namespace CityInfo.Application.Contract
         private readonly ILogger<PointOfInterestContract> _logger;
         private readonly IMailService _mailService;
         private readonly ICityInfoRepository _cityInfoRepository;
-        private readonly PointOfInterestMapper _mapper = new PointOfInterestMapper();
+        private readonly IMapper _mapper;
 
-        public PointOfInterestContract(ILogger<PointOfInterestContract> logger, 
+        public PointOfInterestContract(ILogger<PointOfInterestContract> logger,
                                        IMailService mailService,
-                                       ICityInfoRepository cityInfoRepository)
+                                       ICityInfoRepository cityInfoRepository, IMapper mapper)
         {
             _logger = logger;
-            _mailService = mailService;
-            _cityInfoRepository = cityInfoRepository;
+            _mailService = mailService ?? throw new ArgumentNullException(nameof(mailService));
+            _cityInfoRepository = cityInfoRepository ?? throw new ArgumentNullException(nameof(cityInfoRepository));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public IEnumerable<PointOfInterestDto> GetPointsOfInterestByCityId(int cityId)
+        public IEnumerable<PointOfInterestDto> GetAllPointsOfInterestByCityId(int cityId)
         {
-            try
+
+            if (!_cityInfoRepository.CityForCityIdExists(cityId).Result)
             {
-                var pointOfInterests = _cityInfoRepository.GetAllPointsOfInterestForCityAsync(cityId).Result;
-
-                if (pointOfInterests == null)
-                {
-                    return null;
-                }
-
-                PointOfInterestMapper pointOfInterestMapper = new PointOfInterestMapper();
-
-                var pointOfInterestDtos = new List<PointOfInterestDto>();
-
-                foreach (var pointOfInterest in pointOfInterests)
-                {
-                    var pointOfInterestDto = pointOfInterestMapper.Map(pointOfInterest);
-                    pointOfInterestDtos.Add(pointOfInterestDto);
-                }
-
-                return pointOfInterestDtos;
+                _logger.LogCritical($"City with id {cityId} wasn't found when accessing points of interest.");
+                return null;
             }
-            catch (Exception ex)
+
+            var allPointOfInterests = _cityInfoRepository.GetAllPointsOfInterestForCityAsync(cityId).Result;
+
+            if (allPointOfInterests == null)
             {
-                _logger.LogCritical($"Exception while getting points of interest for city with id {cityId}.", ex);
-                throw ex;
+                return null;
             }
+
+            return _mapper.Map<IEnumerable<PointOfInterestDto>>(allPointOfInterests);
         }
 
         public PointOfInterestDto GetPointOfInterestById(int cityId, int pointOfInterestId)
         {
-            var city = _cityInfoRepository.GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).Result; 
-
-            if (city == null)
+            if (!_cityInfoRepository.CityForCityIdExists(cityId).Result)
             {
+                _logger.LogCritical($"City with id {cityId} wasn't found when accessing points of interest.");
                 return null;
             }
 
@@ -74,133 +63,112 @@ namespace CityInfo.Application.Contract
                 return null;
             }
 
-            PointOfInterestMapper pointOfInterestMapper = new PointOfInterestMapper();
-
-            var pointOfInterestDto = pointOfInterestMapper.Map(pointOfInterest);
-
-            return pointOfInterestDto;
+            return _mapper.Map<PointOfInterestDto>(pointOfInterest);
         }
 
-        public PointOfInterestDto CreatePointOfInterestById(int cityId, PointOfInterestForCreationDto pointOfInterestDto)
+        public async Task<PointOfInterestDto> CreatePointOfInterestById(int cityId, PointOfInterestForCreationDto pointOfInterestDto)
         {
-            var city = _cityInfoRepository.GetCityByCityIdAsync(cityId, true).Result;
-
-            if (city == null)
+            if (!_cityInfoRepository.CityForCityIdExists(cityId).Result)
             {
+                _logger.LogCritical($"City with id {cityId} wasn't found when accessing points of interest.");
                 return null;
             }
 
-            var results = new List<PointOfInterest>();
+            var finalPointOfInterest = _mapper.Map<PointOfInterest>(pointOfInterestDto);
+
+            await _cityInfoRepository.AddPointOfInterestForCityAsync(cityId, finalPointOfInterest);
+
+            await _cityInfoRepository.SaveChangesAsync();
+
+            var createdPointOfInterestToReturn = _mapper.Map<Application.Dto.PointOfInterestDto>(finalPointOfInterest);
+
+            return createdPointOfInterestToReturn;
+        }
+
+        public async Task<PointOfInterestDto> UpdatePointOfInterestById(int cityId, int pointOfInterestId, PointOfInterestForUpdateDto pointOfInterestDto)
+        {
+            if (!_cityInfoRepository.CityForCityIdExists(cityId).Result)
+            {
+                _logger.LogCritical($"City with id {cityId} wasn't found when accessing points of interest.");
+                return null;
+            }
+
+            var pointOfInterestEntity = _cityInfoRepository.GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).Result;
+
+            if (pointOfInterestEntity == null)
+            {
+                return null;
+            }
             
-            var pointOfInterests = _cityInfoRepository.GetAllPointsOfInterestForCityAsync(cityId).Result;
 
-            foreach (var pointInPointOfInterest in pointOfInterests)
+            var pointOfInterestToReturn = _mapper.Map(pointOfInterestDto, pointOfInterestEntity);
+
+            var updatePointOfIntrestStatus = _cityInfoRepository.UpdatePointOfInterestForCity(pointOfInterestToReturn);
+
+            if (updatePointOfIntrestStatus)
             {
-                //var point = _mapper.Map(pointInPointOfInterest);
-
-                results.Add(pointInPointOfInterest);
+                await _cityInfoRepository.SaveChangesAsync();
             }
 
-            var maxPointOfInterestId = results.Max(p => p.Id);
+            var result = new PointOfInterestDto();
 
-            var finalPointOfInterest = new PointOfInterest()
-            {
-                Id = ++maxPointOfInterestId,
-                Name = pointOfInterestDto.Name,
-                Description = pointOfInterestDto.Description
-            };
-
-            results.Add(finalPointOfInterest);
-
-            return GetPointOfInterestById(cityId, finalPointOfInterest.Id);
+            return _mapper.Map(pointOfInterestToReturn, result);
         }
 
-        public PointOfInterestDto UpdatePointOfInterestById(int cityId, int pointOfInterestId, PointOfInterestForUpdateDto pointOfInterestDto)
+        public async Task<PointOfInterestDto> PartiallUpdatePointOfInterestById(int cityId, int pointOfInterestId, JsonPatchDocument<PointOfInterestForUpdateDto> patchDocumentDto)
         {
-            var city = _cityInfoRepository.GetCityByCityIdAsync(cityId, true).Result;
+            if (!_cityInfoRepository.CityForCityIdExists(cityId).Result)
+            {
+                _logger.LogCritical($"City with id {cityId} wasn't found when accessing points of interest.");
+                return null;
+            }
 
-            if (city == null)
+            var pointOfInterestEntity = _cityInfoRepository.GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).Result;
+
+            if (pointOfInterestEntity == null)
             {
                 return null;
             }
 
-            var pointOfInterestFromStore = _cityInfoRepository.GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).Result;
-
-            if (pointOfInterestFromStore == null)
-            {
-                return null;
-            }
-
-            pointOfInterestFromStore.Name = pointOfInterestDto.Name;
-            pointOfInterestFromStore.Description = pointOfInterestDto.Description;
-
-            PointOfInterestMapper pointOfInterestMapper = new PointOfInterestMapper();
-
-            var pointOfInterestFromStoreDto = pointOfInterestMapper.Map(pointOfInterestFromStore);
-
-            return pointOfInterestFromStoreDto;
-        }
-
-        public PointOfInterestDto PartiallUpdatePointOfInterestById(int cityId, int pointOfInterestId, JsonPatchDocument<PointOfInterestForUpdateDto> patchDocumentDto)
-        {
-            var city = _cityInfoRepository.GetCityByCityIdAsync(cityId, true).Result;
-
-            if (city == null)
-            {
-                return null;
-            }
-
-            var pointOfInterestFromStore = _cityInfoRepository.GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).Result;
-
-            if (pointOfInterestFromStore == null)
-            {
-                throw new Exception($"Point of Interset with id: {pointOfInterestId} not found");
-            }
-
-            var pointOfInterestToPatchDto = new PointOfInterestForUpdateDto()
-            {
-                Name = pointOfInterestFromStore.Name,
-                Description = pointOfInterestFromStore.Description
-            };
+            var pointOfInterestToPatchDto = _mapper.Map<PointOfInterestForUpdateDto>(pointOfInterestEntity);
 
             patchDocumentDto.ApplyTo(pointOfInterestToPatchDto);
 
-            pointOfInterestFromStore.Name = pointOfInterestToPatchDto.Name;
-            pointOfInterestFromStore.Description = pointOfInterestToPatchDto.Description;
+            var pointOfInterestToReturn = _mapper.Map(pointOfInterestToPatchDto, pointOfInterestEntity);
 
-            PointOfInterestMapper pointOfInterestMapper = new PointOfInterestMapper();
+            await _cityInfoRepository.SaveChangesAsync();
 
-            var pointOfInterestFromStoreDto = pointOfInterestMapper.Map(pointOfInterestFromStore);
+            var result = new PointOfInterestDto();
 
-            return pointOfInterestFromStoreDto;
+            return _mapper.Map(pointOfInterestToReturn, result);
         }
 
-        public PointOfInterestDto DeletePointOfInterestById(int cityId, int pointOfInterestId)
+        public async Task<PointOfInterestDto> DeletePointOfInterestById(int cityId, int pointOfInterestId)
         {
-            var city = _cityInfoRepository.GetCityByCityIdAsync(cityId, true).Result;
+            if (!_cityInfoRepository.CityForCityIdExists(cityId).Result)
+            {
+                _logger.LogCritical($"City with id {cityId} wasn't found when accessing points of interest.");
+                return null;
+            }
 
-            if (city == null)
+            var pointOfInterestEntity = _cityInfoRepository
+                .GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).Result;
+
+            if (pointOfInterestEntity == null)
             {
                 return null;
             }
 
-            var pointOfInterestFromStore = _cityInfoRepository.GetPointOfInterestForCityByPointOfInterestIdAsync(cityId, pointOfInterestId).Result;
+            _cityInfoRepository.DeletePointOfInterest(pointOfInterestEntity);
 
-            if (pointOfInterestFromStore == null)
-            {
-                return null;
-            }
-
-            city.PointOfInterest.Remove(pointOfInterestFromStore);
+            await _cityInfoRepository.SaveChangesAsync();
 
             _mailService.Send("Point of interest deleted",
-                $"Point of interest {pointOfInterestFromStore.Name} with id {pointOfInterestFromStore.Id} was deleted.");
+                $"Point of interest {pointOfInterestEntity.Name} with id {pointOfInterestEntity.Id} was deleted.");
 
-            PointOfInterestMapper pointOfInterestMapper = new PointOfInterestMapper();
+            var result = new PointOfInterestDto();
 
-            var pointOfInterestFromStoreDto = pointOfInterestMapper.Map(pointOfInterestFromStore);
-
-            return pointOfInterestFromStoreDto;
+            return _mapper.Map(pointOfInterestEntity, result);
         }
     }
 }

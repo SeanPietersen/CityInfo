@@ -1,0 +1,35 @@
+2022-04-21 09:07:28.699 +02:00 [DBG] Hosting starting
+2022-04-21 09:07:30.195 +02:00 [DBG] Using development certificate: CN=localhost (Thumbprint: A40C6697D0C21C2C32B35E9E8F9AD3269C88392E)
+2022-04-21 09:07:30.405 +02:00 [INF] Now listening on: https://localhost:5001
+2022-04-21 09:07:30.450 +02:00 [INF] Now listening on: http://localhost:5000
+2022-04-21 09:07:30.452 +02:00 [DBG] Loaded hosting startup assembly CityInfo.API
+2022-04-21 09:07:30.503 +02:00 [INF] Application started. Press Ctrl+C to shut down.
+2022-04-21 09:07:30.504 +02:00 [INF] Hosting environment: Development
+2022-04-21 09:07:30.507 +02:00 [INF] Content root path: C:\Users\CodeTenor\Desktop\C#\APIFundementals\CityInfo\CityInfo.API
+2022-04-21 09:07:30.515 +02:00 [DBG] Connection id "0HMH3CMCSFJM2" received FIN.
+2022-04-21 09:07:30.519 +02:00 [DBG] Hosting started
+2022-04-21 09:07:30.550 +02:00 [DBG] Connection id "0HMH3CMCSFJM2" accepted.
+2022-04-21 09:07:30.554 +02:00 [DBG] Connection id "0HMH3CMCSFJM2" started.
+2022-04-21 09:07:30.612 +02:00 [DBG] Failed to authenticate HTTPS connection.
+System.IO.IOException:  Received an unexpected EOF or 0 bytes from the transport stream.
+   at System.Net.Security.SslStream.ReceiveBlobAsync[TIOAdapter](TIOAdapter adapter)
+   at System.Net.Security.SslStream.ForceAuthenticationAsync[TIOAdapter](TIOAdapter adapter, Boolean receiveFirst, Byte[] reAuthenticationData, Boolean isApm)
+   at Microsoft.AspNetCore.Server.Kestrel.Https.Internal.HttpsConnectionMiddleware.OnConnectionAsync(ConnectionContext context)
+2022-04-21 09:07:31.262 +02:00 [DBG] Connection id "0HMH3CMCSFJM2" stopped.
+2022-04-21 09:07:31.278 +02:00 [DBG] Connection id "0HMH3CMCSFJM2" sending FIN because: "The Socket transport's send loop completed gracefully."
+2022-04-21 09:07:32.676 +02:00 [DBG] Connection id "0HMH3CMCSFJM3" accepted.
+2022-04-21 09:07:33.176 +02:00 [DBG] Connection id "0HMH3CMCSFJM3" started.
+2022-04-21 09:07:33.693 +02:00 [DBG] Connection "0HMH3CMCSFJM3" established using the following protocol: "Tls12"
+2022-04-21 09:07:33.875 +02:00 [INF] Request starting HTTP/2 GET https://localhost:5001/swagger/index.html - -
+2022-04-21 09:07:33.881 +02:00 [DBG] Wildcard detected, all requests with hosts will be allowed.
+2022-04-21 09:07:34.147 +02:00 [INF] Request finished HTTP/2 GET https://localhost:5001/swagger/index.html - - - 200 - text/html;charset=utf-8 277.7695ms
+2022-04-21 09:07:34.587 +02:00 [INF] Request starting HTTP/2 GET https://localhost:5001/swagger/favicon-16x16.png - -
+2022-04-21 09:07:34.660 +02:00 [INF] Request starting HTTP/2 GET https://localhost:5001/swagger/v1/swagger.json - -
+2022-04-21 09:07:34.704 +02:00 [DBG] The file transmission was cancelled
+System.OperationCanceledException: The operation was canceled.
+   at System.Threading.CancellationToken.ThrowOperationCanceledException()
+   at Microsoft.AspNetCore.Http.SendFileResponseExtensions.SendFileAsyncCore(HttpResponse response, IFileInfo file, Int64 offset, Nullable`1 count, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.StaticFiles.StaticFileContext.SendAsync()
+2022-04-21 09:07:34.720 +02:00 [INF] Sending file. Request path: '/favicon-16x16.png'. Physical path: 'N/A'
+2022-04-21 09:07:34.726 +02:00 [INF] Request finished HTTP/2 GET https://localhost:5001/swagger/favicon-16x16.png - - - 0 665 image/png 138.5462ms
+2022-04-21 09:07:35.060 +02:00 [INF] Request finished HTTP/2 GET https://localhost:5001/swagger/v1/swagger.json - - - 200 - application/json;charset=utf-8 399.2128ms
